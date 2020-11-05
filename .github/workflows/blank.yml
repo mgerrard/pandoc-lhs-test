@@ -20,6 +20,9 @@ jobs:
     - uses: docker://pandoc/latex:2.9
       with:
           args: --output=result.pdf ${{ env.FILELIST }}
+    - name: add files
+      run: |
+        git add result.pdf
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
