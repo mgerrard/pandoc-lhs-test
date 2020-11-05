@@ -23,4 +23,6 @@ jobs:
         with:
           args: paste.lhs -f markdown+lhs -t html -s -o paste.html
       - uses: actions/upload-artifact@main
+        with:
+          path: /
 
