@@ -1,28 +1,22 @@
-# This is a basic workflow to help you get started with Actions
+name: Advanced Usage
 
-name: CI
+on: push
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the main branch
-on:
-  push:
-    branches: [ main ]
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   convert_via_pandoc:
-    # The type of runner that the job will run on
     runs-on: ubuntu-18.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2        
-      - uses: docker://pandoc/core:2.9
+      - uses: actions/checkout@v2
+      - run: |
+          echo "Lorem ipsum" > lorem_1.md  # create two example files
+          echo "dolor sit amet" > lorem_2.md
+          mkdir output  # create output dir
+          # this will also include README.md
+          echo "::set-env name=FILELIST::$(printf '"%s" ' *.md)"
+      - uses: docker://pandoc/latex:2.9
         with:
-          args: paste.lhs -f markdown+lhs -t html -s -o paste.html
-      - uses: actions/upload-artifact@v2
+          args: --output=output/result.pdf ${{ env.FILELIST }}
+      - uses: actions/upload-artifact@master
         with:
-          path: /
-
+          name: output
+          path: output
