@@ -10,19 +10,13 @@ jobs:
       with:
         persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
         fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
-    - name: Create local changes
-      run: |
-          echo "Lorem ipsum" > lorem_1.md  # create two example files
-          echo "dolor sit amet" > lorem_2.md
-          mkdir output  # create output dir
-          # this will also include README.md
-          echo "::set-env name=FILELIST::$(printf '"%s" ' *.md)"
-    - uses: docker://pandoc/latex:2.9
+    - name: run pandoc on paste.lhs
+      uses: docker://pandoc/latex:2.9
       with:
-          args: --output=result.pdf ${{ env.FILELIST }}
+          args: paste.lhs -f markdown+lhs -t html -s --toc -o paste.html
     - name: add files
       run: |
-        git add result.pdf
+        git add paste.html
     - name: Commit files
       run: |
         git config --local user.email "action@github.com"
