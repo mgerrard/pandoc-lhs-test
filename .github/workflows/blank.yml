@@ -11,7 +11,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  convert_via_pandoc:
     # The type of runner that the job will run on
     runs-on: ubuntu-18.04
 
@@ -19,7 +19,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: convert paste.lhs to html
+        
       - uses: docker://pandoc/core:2.9
         with:
           args: paste.lhs -f markdown+lhs -t html -s -o paste.html
