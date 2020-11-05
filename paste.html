@@ -6,6 +6,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>A simple pasteboard app</title>
   <style>
+    html {
+      line-height: 1.7;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 40em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin-top: 1.7em;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.7em;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1.7em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1.7em 0 1.7em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      font-style: italic;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      background-color: #f0f0f0;
+      font-size: 85%;
+      margin: 0;
+      padding: .2em .4em;
+    }
+    pre {
+      line-height: 1.5em;
+      padding: 1em;
+      background-color: #f0f0f0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin-top: 1.7em;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+    }
+    th, td {
+      border-bottom: 1px solid lightgray;
+      padding: 1em 3em 1em 0;
+    }
+    header {
+      margin-bottom: 6em;
+      text-align: center;
+    }
+    nav a:not(:hover) {
+      text-decoration: none;
+    }
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
     span.underline{text-decoration: underline;}
@@ -74,6 +180,7 @@
     code span.va { color: #19177c; } /* Variable */
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
@@ -112,136 +219,136 @@
 <p>On to the code! (This page is literate Haskell – lines beginning with <code>&gt;</code> form a Haskell program.)</p>
 <h2 id="imports">Imports</h2>
 <p>First, we need to import the modules we’re going to use. We’ll be using the web server and response-building functions from <code>happstack-server</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">import</span> <span class="dt">Happstack.Server</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Happstack.Server</span></span></code></pre></div>
 <p>For our database, we’ll use the sqlite3 interface to <code>HDBC</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">import</span> <span class="dt">Database.HDBC</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="kw">import</span> <span class="dt">Database.HDBC.Sqlite3</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.HDBC</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Database.HDBC.Sqlite3</span></span></code></pre></div>
 <p>We’ll construct HTML pages using combinators from <code>xhtml</code>:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">import</span> <span class="dt">Text.XHtml.Transitional</span> <span class="kw">hiding</span> (dir)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Text.XHtml.Transitional</span> <span class="kw">hiding</span> (dir)</span></code></pre></div>
 <p>(Here we hide <code>dir</code>, which clashes with a function exported from <code>Happstack.Server</code>.)</p>
 <p>To highlight source code, we’ll use <code>highlighting-kate</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">import</span> <span class="dt">Text.Highlighting.Kate</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Text.Highlighting.Kate</span></span></code></pre></div>
 <p>Some functions for formatting times:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">import</span> <span class="dt">Data.Time</span> (formatTime, getCurrentTime, <span class="dt">UTCTime</span>)</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="kw">import</span> <span class="dt">System.Locale</span> (defaultTimeLocale)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Data.Time</span> (formatTime, getCurrentTime, <span class="dt">UTCTime</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">System.Locale</span> (defaultTimeLocale)</span></code></pre></div>
 <p>Finally, some utility functions for working with monads:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> (unless, msum, mzero, <span class="dt">MonadPlus</span>)</span>
-<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">import</span> <span class="dt">Control.Monad.Trans</span> (<span class="dt">MonadIO</span>, liftIO)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad</span> (unless, msum, mzero, <span class="dt">MonadPlus</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">import</span> <span class="dt">Control.Monad.Trans</span> (<span class="dt">MonadIO</span>, liftIO)</span></code></pre></div>
 <h2 id="main-program">Main program</h2>
 <p>Let’s start with the top-level <code>main</code> function. It connects to a sqlite database, creates the <code>pastes</code> table if it is missing, then starts up the web server:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
-<span id="cb7-2"><a href="#cb7-2"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a>  <span class="kw">let</span> portNumber <span class="ot">=</span> <span class="dv">3000</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a>  db <span class="ot">&lt;-</span> handleSqlError <span class="op">$</span> connectSqlite3 <span class="st">&quot;pastes.sql&quot;</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a>  createTableIfMissing db</span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Starting server on port &quot;</span> <span class="op">++</span> <span class="fu">show</span> portNumber</span>
-<span id="cb7-7"><a href="#cb7-7"></a>  simpleHTTP nullConf{ port <span class="ot">=</span> portNumber } (pasteApp db)</span>
-<span id="cb7-8"><a href="#cb7-8"></a>  disconnect db</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>main <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> portNumber <span class="ot">=</span> <span class="dv">3000</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  db <span class="ot">&lt;-</span> handleSqlError <span class="op">$</span> connectSqlite3 <span class="st">&quot;pastes.sql&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  createTableIfMissing db</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">putStrLn</span> <span class="op">$</span> <span class="st">&quot;Starting server on port &quot;</span> <span class="op">++</span> <span class="fu">show</span> portNumber</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  simpleHTTP nullConf{ port <span class="ot">=</span> portNumber } (pasteApp db)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  disconnect db</span></code></pre></div>
 <h2 id="initializing-the-database">Initializing the database</h2>
 <p><code>createTableIfMissing</code> checks to see if the database we’ve connected to contains a <code>pastes</code> table. If not, it creates this table. This way we don’t need to require users to create the database table before running our program for the first time:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="ot">createTableIfMissing ::</span> (<span class="dt">IConnection</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
-<span id="cb8-2"><a href="#cb8-2"></a>createTableIfMissing db <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb8-3"><a href="#cb8-3"></a>  tables <span class="ot">&lt;-</span> handleSqlError <span class="op">$</span> getTables db</span>
-<span id="cb8-4"><a href="#cb8-4"></a>  unless (<span class="st">&quot;pastes&quot;</span> <span class="ot">`elem`</span> tables) <span class="op">$</span> handleSqlError <span class="op">$</span> <span class="kw">do</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a>    run db (<span class="st">&quot;CREATE TABLE pastes (id INTEGER PRIMARY KEY AUTOINCREMENT,&quot;</span> <span class="op">++</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>        <span class="st">&quot; title TEXT, timestamp DATE, syntax VARCHAR(20), contents TEXT)&quot;</span>) []</span>
-<span id="cb8-7"><a href="#cb8-7"></a>    commit db</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ot">createTableIfMissing ::</span> (<span class="dt">IConnection</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>createTableIfMissing db <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  tables <span class="ot">&lt;-</span> handleSqlError <span class="op">$</span> getTables db</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  unless (<span class="st">&quot;pastes&quot;</span> <span class="ot">`elem`</span> tables) <span class="op">$</span> handleSqlError <span class="op">$</span> <span class="kw">do</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    run db (<span class="st">&quot;CREATE TABLE pastes (id INTEGER PRIMARY KEY AUTOINCREMENT,&quot;</span> <span class="op">++</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot; title TEXT, timestamp DATE, syntax VARCHAR(20), contents TEXT)&quot;</span>) []</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    commit db</span></code></pre></div>
 <h2 id="a-data-structure-for-pastes">A data structure for pastes</h2>
 <p>Before we get to <code>pasteApp</code>, let’s define a data structure for our pastes.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">data</span> <span class="dt">Paste</span> <span class="ot">=</span> <span class="dt">Paste</span> {<span class="ot"> pasteId ::</span> <span class="dt">Integer</span></span>
-<span id="cb9-2"><a href="#cb9-2"></a>                   ,<span class="ot"> pasteTitle ::</span> <span class="dt">String</span></span>
-<span id="cb9-3"><a href="#cb9-3"></a>                   ,<span class="ot"> pasteTimestamp ::</span> <span class="dt">UTCTime</span></span>
-<span id="cb9-4"><a href="#cb9-4"></a>                   ,<span class="ot"> pasteSyntax ::</span> <span class="dt">String</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a>                   ,<span class="ot"> pasteContents ::</span> <span class="dt">String</span> }</span>
-<span id="cb9-6"><a href="#cb9-6"></a></span>
-<span id="cb9-7"><a href="#cb9-7"></a><span class="ot">nullPaste ::</span> <span class="dt">Paste</span></span>
-<span id="cb9-8"><a href="#cb9-8"></a>nullPaste <span class="ot">=</span> <span class="dt">Paste</span> { pasteId <span class="ot">=</span> <span class="fu">undefined</span></span>
-<span id="cb9-9"><a href="#cb9-9"></a>                  , pasteTitle <span class="ot">=</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb9-10"><a href="#cb9-10"></a>                  , pasteTimestamp <span class="ot">=</span> <span class="fu">undefined</span></span>
-<span id="cb9-11"><a href="#cb9-11"></a>                  , pasteSyntax <span class="ot">=</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb9-12"><a href="#cb9-12"></a>                  , pasteContents <span class="ot">=</span> <span class="st">&quot;&quot;</span> }</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Paste</span> <span class="ot">=</span> <span class="dt">Paste</span> {<span class="ot"> pasteId ::</span> <span class="dt">Integer</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                   ,<span class="ot"> pasteTitle ::</span> <span class="dt">String</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                   ,<span class="ot"> pasteTimestamp ::</span> <span class="dt">UTCTime</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                   ,<span class="ot"> pasteSyntax ::</span> <span class="dt">String</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                   ,<span class="ot"> pasteContents ::</span> <span class="dt">String</span> }</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="ot">nullPaste ::</span> <span class="dt">Paste</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>nullPaste <span class="ot">=</span> <span class="dt">Paste</span> { pasteId <span class="ot">=</span> <span class="fu">undefined</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>                  , pasteTitle <span class="ot">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>                  , pasteTimestamp <span class="ot">=</span> <span class="fu">undefined</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                  , pasteSyntax <span class="ot">=</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                  , pasteContents <span class="ot">=</span> <span class="st">&quot;&quot;</span> }</span></code></pre></div>
 <h2 id="saving-and-retrieving-pastes">Saving and retrieving pastes</h2>
 <p>We’ll need a way to save a new paste to the database, and a way to retrieve a paste when given the <code>id</code>. These functions are fairly straightforward: they just run SQL commands, using <code>HDBC</code>’s <code>toSql</code> and <code>fromSql</code> to convert between Haskell data types and SQL values.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="ot">savePasteToDb ::</span> (<span class="dt">IConnection</span> d, <span class="dt">MonadIO</span> m)</span>
-<span id="cb10-2"><a href="#cb10-2"></a>              <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> m <span class="dt">Integer</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>savePasteToDb db paste <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb10-4"><a href="#cb10-4"></a>  <span class="kw">let</span> query <span class="ot">=</span> <span class="st">&quot;INSERT INTO pastes(title, timestamp, syntax, contents)&quot;</span> <span class="op">++</span></span>
-<span id="cb10-5"><a href="#cb10-5"></a>              <span class="st">&quot; VALUES(?, ?, ?, ?)&quot;</span></span>
-<span id="cb10-6"><a href="#cb10-6"></a>  t <span class="ot">&lt;-</span> liftIO getCurrentTime</span>
-<span id="cb10-7"><a href="#cb10-7"></a>  <span class="kw">let</span> vals <span class="ot">=</span> [toSql (pasteTitle paste), toSql t, toSql (pasteSyntax paste),</span>
-<span id="cb10-8"><a href="#cb10-8"></a>              toSql (pasteContents paste)]</span>
-<span id="cb10-9"><a href="#cb10-9"></a>  liftIO <span class="op">$</span> withTransaction db <span class="op">$</span> \d <span class="ot">-&gt;</span> run d query vals</span>
-<span id="cb10-10"><a href="#cb10-10"></a>  [[uid]] <span class="ot">&lt;-</span> liftIO <span class="op">$</span> quickQuery db <span class="st">&quot;select last_insert_rowid()&quot;</span> []</span>
-<span id="cb10-11"><a href="#cb10-11"></a>  <span class="fu">return</span> (fromSql uid)</span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1"></a><span class="ot">getPasteFromDb ::</span> (<span class="dt">IConnection</span> d, <span class="dt">MonadIO</span> m, <span class="dt">MonadPlus</span> m)</span>
-<span id="cb11-2"><a href="#cb11-2"></a>            <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> m <span class="dt">Paste</span></span>
-<span id="cb11-3"><a href="#cb11-3"></a>getPasteFromDb db uid <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a>  pastes <span class="ot">&lt;-</span> liftIO <span class="op">$</span> handleSqlError <span class="op">$</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a>              quickQuery db <span class="st">&quot;SELECT * FROM pastes WHERE id = ?&quot;</span> [toSql uid]</span>
-<span id="cb11-6"><a href="#cb11-6"></a>  <span class="kw">case</span> pastes <span class="kw">of</span></span>
-<span id="cb11-7"><a href="#cb11-7"></a>     ([_,tit,ts,synt,cont]<span class="op">:</span>_) <span class="ot">-&gt;</span></span>
-<span id="cb11-8"><a href="#cb11-8"></a>           <span class="fu">return</span> <span class="dt">Paste</span> { pasteId <span class="ot">=</span> uid</span>
-<span id="cb11-9"><a href="#cb11-9"></a>                        , pasteTitle <span class="ot">=</span> fromSql tit</span>
-<span id="cb11-10"><a href="#cb11-10"></a>                        , pasteTimestamp <span class="ot">=</span> fromSql ts</span>
-<span id="cb11-11"><a href="#cb11-11"></a>                        , pasteSyntax <span class="ot">=</span> fromSql synt</span>
-<span id="cb11-12"><a href="#cb11-12"></a>                        , pasteContents <span class="ot">=</span> fromSql cont }</span>
-<span id="cb11-13"><a href="#cb11-13"></a>     _ <span class="ot">-&gt;</span> mzero</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="ot">savePasteToDb ::</span> (<span class="dt">IConnection</span> d, <span class="dt">MonadIO</span> m)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>              <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> m <span class="dt">Integer</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>savePasteToDb db paste <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> query <span class="ot">=</span> <span class="st">&quot;INSERT INTO pastes(title, timestamp, syntax, contents)&quot;</span> <span class="op">++</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>              <span class="st">&quot; VALUES(?, ?, ?, ?)&quot;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  t <span class="ot">&lt;-</span> liftIO getCurrentTime</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> vals <span class="ot">=</span> [toSql (pasteTitle paste), toSql t, toSql (pasteSyntax paste),</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>              toSql (pasteContents paste)]</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  liftIO <span class="op">$</span> withTransaction db <span class="op">$</span> \d <span class="ot">-&gt;</span> run d query vals</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  [[uid]] <span class="ot">&lt;-</span> liftIO <span class="op">$</span> quickQuery db <span class="st">&quot;select last_insert_rowid()&quot;</span> []</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span> (fromSql uid)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="ot">getPasteFromDb ::</span> (<span class="dt">IConnection</span> d, <span class="dt">MonadIO</span> m, <span class="dt">MonadPlus</span> m)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>            <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> m <span class="dt">Paste</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>getPasteFromDb db uid <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  pastes <span class="ot">&lt;-</span> liftIO <span class="op">$</span> handleSqlError <span class="op">$</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>              quickQuery db <span class="st">&quot;SELECT * FROM pastes WHERE id = ?&quot;</span> [toSql uid]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">case</span> pastes <span class="kw">of</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>     ([_,tit,ts,synt,cont]<span class="op">:</span>_) <span class="ot">-&gt;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>           <span class="fu">return</span> <span class="dt">Paste</span> { pasteId <span class="ot">=</span> uid</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                        , pasteTitle <span class="ot">=</span> fromSql tit</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>                        , pasteTimestamp <span class="ot">=</span> fromSql ts</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>                        , pasteSyntax <span class="ot">=</span> fromSql synt</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>                        , pasteContents <span class="ot">=</span> fromSql cont }</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>     _ <span class="ot">-&gt;</span> mzero</span></code></pre></div>
 <h2 id="routing">Routing</h2>
 <p>Now for the application itself. It’s just a sum of <code>ServerPart</code>s. Each <code>ServerPart</code> in the list is tried until one succeeds; if none succeeds, happstack will generate a generic 404 response:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a><span class="ot">pasteApp ::</span> (<span class="dt">IConnection</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a>pasteApp db <span class="ot">=</span> msum</span>
-<span id="cb12-3"><a href="#cb12-3"></a>    [ methodOnly <span class="dt">GET</span>  <span class="op">&gt;&gt;</span> nullDir <span class="op">&gt;&gt;</span> showPasteForm</span>
-<span id="cb12-4"><a href="#cb12-4"></a>    , methodOnly <span class="dt">POST</span> <span class="op">&gt;&gt;</span> nullDir <span class="op">&gt;&gt;</span> decodeBody postBodyPolicy <span class="op">&gt;&gt;</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>        withData (addPaste db)</span>
-<span id="cb12-6"><a href="#cb12-6"></a>    , methodOnly <span class="dt">GET</span>  <span class="op">&gt;&gt;</span> path (showPaste db) ]</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ot">pasteApp ::</span> (<span class="dt">IConnection</span> a) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>pasteApp db <span class="ot">=</span> msum</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    [ methodOnly <span class="dt">GET</span>  <span class="op">&gt;&gt;</span> nullDir <span class="op">&gt;&gt;</span> showPasteForm</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    , methodOnly <span class="dt">POST</span> <span class="op">&gt;&gt;</span> nullDir <span class="op">&gt;&gt;</span> decodeBody postBodyPolicy <span class="op">&gt;&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        withData (addPaste db)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    , methodOnly <span class="dt">GET</span>  <span class="op">&gt;&gt;</span> path (showPaste db) ]</span></code></pre></div>
 <p>The routing is handled using guards and combinators. <code>methodOnly GET</code> is a <code>ServerPart</code> that succeeds if the request method is GET and fails otherwise. <code>nullDir</code> succeeds if the URL path is empty (that is, the request was for ‘/’) and fails otherwise. <code>withData</code> and <code>path</code> will be discussed below.</p>
 <p><code>decodeBody postBodyPolicy</code> tells happstack to unpack the data in a POST request. The <code>postBodyPolicy</code> controls how form data and file uploads are treated. This policy says to put uploaded files in <code>/tmp/</code>, to allow 0K for file uploads, 10K for data (the source code to be highlighted) and 1K for headers:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1"></a>postBodyPolicy <span class="ot">=</span> defaultBodyPolicy <span class="st">&quot;/tmp/&quot;</span> <span class="dv">0</span> <span class="dv">10000</span> <span class="dv">1000</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>postBodyPolicy <span class="ot">=</span> defaultBodyPolicy <span class="st">&quot;/tmp/&quot;</span> <span class="dv">0</span> <span class="dv">10000</span> <span class="dv">1000</span></span></code></pre></div>
 <h2 id="displaying-the-paste-input-form">Displaying the paste input form</h2>
 <p>The simplest of our handlers just shows the form for a paste:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1"></a><span class="ot">showPasteForm ::</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
-<span id="cb14-2"><a href="#cb14-2"></a>showPasteForm <span class="ot">=</span> ok <span class="op">$</span> toResponse <span class="op">$</span> pasteForm [] nullPaste</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="ot">showPasteForm ::</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>showPasteForm <span class="ot">=</span> ok <span class="op">$</span> toResponse <span class="op">$</span> pasteForm [] nullPaste</span></code></pre></div>
 <p><code>toResponse</code> turns the output of <code>pasteForm</code>, which has type <code>Html</code>, into an HTTP response, and <code>ok</code> adds the OK status. (This works because <code>Html</code> is an instance of the <code>ToMessage</code> type class, defined in happstack.)</p>
 <p>We give <code>pasteForm</code> two arguments, one for a list of validation errors, another for a <code>Paste</code>, which will supply default values. These aren’t really needed for <code>showPasteForm</code>, but we’ll need them in <code>addPaste</code>.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1"></a><span class="ot">pasteForm ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">Html</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a>pasteForm errors paste <span class="ot">=</span> gui <span class="st">&quot;/&quot;</span> <span class="op">&lt;&lt;</span></span>
-<span id="cb15-3"><a href="#cb15-3"></a>    [ ulist <span class="op">!</span> [theclass <span class="st">&quot;errors&quot;</span>] <span class="op">&lt;&lt;</span> <span class="fu">map</span> (li <span class="op">&lt;&lt;</span>) errors</span>
-<span id="cb15-4"><a href="#cb15-4"></a>    , label <span class="op">&lt;&lt;</span> <span class="st">&quot;Title &quot;</span></span>
-<span id="cb15-5"><a href="#cb15-5"></a>    , textfield <span class="st">&quot;title&quot;</span> <span class="op">!</span> [size <span class="st">&quot;50&quot;</span>, value <span class="op">$</span> pasteTitle paste]</span>
-<span id="cb15-6"><a href="#cb15-6"></a>    , label <span class="op">&lt;&lt;</span> <span class="st">&quot;Syntax &quot;</span></span>
-<span id="cb15-7"><a href="#cb15-7"></a>    , select <span class="op">!</span> [name <span class="st">&quot;syntax&quot;</span>, value <span class="op">$</span> pasteSyntax paste] <span class="op">&lt;&lt;</span></span>
-<span id="cb15-8"><a href="#cb15-8"></a>        <span class="fu">map</span> (\l <span class="ot">-&gt;</span> option <span class="op">!</span> [value l] <span class="op">&lt;&lt;</span> l) (<span class="st">&quot;&quot;</span><span class="op">:</span>languages)</span>
-<span id="cb15-9"><a href="#cb15-9"></a>    , submit <span class="st">&quot;update&quot;</span> <span class="st">&quot;Save&quot;</span></span>
-<span id="cb15-10"><a href="#cb15-10"></a>    , br</span>
-<span id="cb15-11"><a href="#cb15-11"></a>    , textarea <span class="op">!</span> [name <span class="st">&quot;contents&quot;</span>, rows <span class="st">&quot;20&quot;</span>, cols <span class="st">&quot;76&quot;</span>] <span class="op">&lt;&lt;</span></span>
-<span id="cb15-12"><a href="#cb15-12"></a>        pasteContents paste ]</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ot">pasteForm ::</span> [<span class="dt">String</span>] <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">Html</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pasteForm errors paste <span class="ot">=</span> gui <span class="st">&quot;/&quot;</span> <span class="op">&lt;&lt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    [ ulist <span class="op">!</span> [theclass <span class="st">&quot;errors&quot;</span>] <span class="op">&lt;&lt;</span> <span class="fu">map</span> (li <span class="op">&lt;&lt;</span>) errors</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    , label <span class="op">&lt;&lt;</span> <span class="st">&quot;Title &quot;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    , textfield <span class="st">&quot;title&quot;</span> <span class="op">!</span> [size <span class="st">&quot;50&quot;</span>, value <span class="op">$</span> pasteTitle paste]</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    , label <span class="op">&lt;&lt;</span> <span class="st">&quot;Syntax &quot;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    , select <span class="op">!</span> [name <span class="st">&quot;syntax&quot;</span>, value <span class="op">$</span> pasteSyntax paste] <span class="op">&lt;&lt;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="fu">map</span> (\l <span class="ot">-&gt;</span> option <span class="op">!</span> [value l] <span class="op">&lt;&lt;</span> l) (<span class="st">&quot;&quot;</span><span class="op">:</span>languages)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    , submit <span class="st">&quot;update&quot;</span> <span class="st">&quot;Save&quot;</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    , br</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    , textarea <span class="op">!</span> [name <span class="st">&quot;contents&quot;</span>, rows <span class="st">&quot;20&quot;</span>, cols <span class="st">&quot;76&quot;</span>] <span class="op">&lt;&lt;</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        pasteContents paste ]</span></code></pre></div>
 <p>(<code>languages</code> is imported from <code>Text.Highlighting.Kate</code>. It is a list of the languages Kate knows how to highlight.)</p>
 <h2 id="adding-a-paste">Adding a paste</h2>
 <p>Now, what about <code>addPaste</code>? It looks like this:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1"></a><span class="ot">addPaste ::</span> <span class="dt">IConnection</span> d <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>addPaste db paste <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb16-3"><a href="#cb16-3"></a>   <span class="kw">let</span> isEmpty <span class="ot">=</span> <span class="fu">all</span> (<span class="ot">`elem`</span> <span class="st">&quot; \t&quot;</span>)</span>
-<span id="cb16-4"><a href="#cb16-4"></a>   <span class="kw">let</span> errors <span class="ot">=</span> [<span class="st">&quot;Title must not be empty&quot;</span> <span class="op">|</span> isEmpty (pasteTitle paste)] <span class="op">++</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a>                [<span class="st">&quot;Contents must not be empty&quot;</span> <span class="op">|</span> isEmpty (pasteContents paste)]</span>
-<span id="cb16-6"><a href="#cb16-6"></a>   <span class="kw">if</span> <span class="fu">not</span> (<span class="fu">null</span> errors)</span>
-<span id="cb16-7"><a href="#cb16-7"></a>      <span class="kw">then</span> ok <span class="op">$</span> toResponse <span class="op">$</span> pasteForm errors paste</span>
-<span id="cb16-8"><a href="#cb16-8"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
-<span id="cb16-9"><a href="#cb16-9"></a>        uid <span class="ot">&lt;-</span> savePasteToDb db paste</span>
-<span id="cb16-10"><a href="#cb16-10"></a>        seeOther (<span class="ch">&#39;/&#39;</span> <span class="op">:</span> <span class="fu">show</span> uid) <span class="op">$</span> toResponse <span class="st">&quot;Redirecting to paste&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ot">addPaste ::</span> <span class="dt">IConnection</span> d <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>addPaste db paste <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>   <span class="kw">let</span> isEmpty <span class="ot">=</span> <span class="fu">all</span> (<span class="ot">`elem`</span> <span class="st">&quot; \t&quot;</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>   <span class="kw">let</span> errors <span class="ot">=</span> [<span class="st">&quot;Title must not be empty&quot;</span> <span class="op">|</span> isEmpty (pasteTitle paste)] <span class="op">++</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                [<span class="st">&quot;Contents must not be empty&quot;</span> <span class="op">|</span> isEmpty (pasteContents paste)]</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>   <span class="kw">if</span> <span class="fu">not</span> (<span class="fu">null</span> errors)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>      <span class="kw">then</span> ok <span class="op">$</span> toResponse <span class="op">$</span> pasteForm errors paste</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>      <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        uid <span class="ot">&lt;-</span> savePasteToDb db paste</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>        seeOther (<span class="ch">&#39;/&#39;</span> <span class="op">:</span> <span class="fu">show</span> uid) <span class="op">$</span> toResponse <span class="st">&quot;Redirecting to paste&quot;</span></span></code></pre></div>
 <p>The logic is fairly simple: It takes a paste as parameter, does some simple validation, and either displays the form again with validation errors or saves the paste to the database and redirects to a page that displays it.</p>
 <p>You might notice that <code>addPaste</code> doesn’t do any request parsing; it just takes a <code>Paste</code> as an argument. Where does that <code>Paste</code> come from? From the HTTP request, of course – but how? Remember how we called it in the routing:</p>
 <pre><code>withData (addPaste db)</code></pre>
 <p>The <code>withData</code> combinator has type</p>
 <pre><code>(FromData a, MonadPlus m, ServerMonad m) =&gt; (a -&gt; m r) -&gt; m r</code></pre>
 <p>So if we define a <code>FromData</code> instance for <code>Paste</code>, <code>withData (addPaste db)</code> will be a <code>ServerPart Response</code>. All the dirty work of parsing the POST request and constructing a <code>Paste</code> object is separated out in the <code>FromData</code> instance:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">instance</span> <span class="dt">FromData</span> <span class="dt">Paste</span> <span class="kw">where</span></span>
-<span id="cb19-2"><a href="#cb19-2"></a>  fromData <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb19-3"><a href="#cb19-3"></a>    ptit <span class="ot">&lt;-</span> look <span class="st">&quot;title&quot;</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>    psyn <span class="ot">&lt;-</span> look <span class="st">&quot;syntax&quot;</span></span>
-<span id="cb19-5"><a href="#cb19-5"></a>    pcontents <span class="ot">&lt;-</span> look <span class="st">&quot;contents&quot;</span></span>
-<span id="cb19-6"><a href="#cb19-6"></a>    <span class="fu">return</span> nullPaste{ pasteTitle <span class="ot">=</span> ptit</span>
-<span id="cb19-7"><a href="#cb19-7"></a>                    , pasteSyntax <span class="ot">=</span> psyn</span>
-<span id="cb19-8"><a href="#cb19-8"></a>                    , pasteContents <span class="ot">=</span> pcontents }</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">instance</span> <span class="dt">FromData</span> <span class="dt">Paste</span> <span class="kw">where</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  fromData <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    ptit <span class="ot">&lt;-</span> look <span class="st">&quot;title&quot;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    psyn <span class="ot">&lt;-</span> look <span class="st">&quot;syntax&quot;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    pcontents <span class="ot">&lt;-</span> look <span class="st">&quot;contents&quot;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> nullPaste{ pasteTitle <span class="ot">=</span> ptit</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                    , pasteSyntax <span class="ot">=</span> psyn</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                    , pasteContents <span class="ot">=</span> pcontents }</span></code></pre></div>
 <p>This should be fairly self-explanatory: <code>look</code> just retrieves a value from a request parameter. You can find out more about <code>look</code> and its variants (<code>lookRead</code>, <code>lookCookie</code>, and so on) in the <a href="http://hackage.haskell.org/packages/archive/happstack-server/0.3.3/doc/html/Happstack-Server-SimpleHTTP.html">happstack API documentation</a>.</p>
 <h2 id="displaying-a-paste">Displaying a paste</h2>
 <p>We just have one more handler to write – the one that shows a paste with highlighted source. This one takes an integer as argument. We are calling it with the <code>path</code> combinator,</p>
@@ -249,26 +356,26 @@
 <p>which pops an element off the URL path and passes it as a parameter to <code>showPaste db</code>. <code>path</code> has type</p>
 <pre><code>(FromReqURI a, MonadPlus m, ServerMonad m) =&gt; (a -&gt; m b) -&gt; m b</code></pre>
 <p>and <code>Integer</code> is an instance of <code>FromReqURI</code>, so we don’t need to worry about converting the path to an integer ourselves.</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1"></a><span class="ot">showPaste ::</span> <span class="dt">IConnection</span> d <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
-<span id="cb22-2"><a href="#cb22-2"></a>showPaste db uid <span class="ot">=</span> <span class="kw">do</span></span>
-<span id="cb22-3"><a href="#cb22-3"></a>  paste <span class="ot">&lt;-</span> getPasteFromDb db uid</span>
-<span id="cb22-4"><a href="#cb22-4"></a>  ok <span class="op">$</span> toResponse <span class="op">$</span> (style <span class="op">!</span> [thetype <span class="st">&quot;text/css&quot;</span>] <span class="op">&lt;&lt;</span></span>
-<span id="cb22-5"><a href="#cb22-5"></a>      primHtml defaultHighlightingCss) <span class="op">+++</span> pasteToHtml paste</span>
-<span id="cb22-6"><a href="#cb22-6"></a></span>
-<span id="cb22-7"><a href="#cb22-7"></a><span class="ot">pasteToHtml ::</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">Html</span></span>
-<span id="cb22-8"><a href="#cb22-8"></a>pasteToHtml paste <span class="ot">=</span></span>
-<span id="cb22-9"><a href="#cb22-9"></a>  thediv <span class="op">!</span> [identifier uid] <span class="op">&lt;&lt;</span></span>
-<span id="cb22-10"><a href="#cb22-10"></a>     [ h2 <span class="op">&lt;&lt;</span> pasteTitle paste</span>
-<span id="cb22-11"><a href="#cb22-11"></a>     , p <span class="op">!</span> [theclass <span class="st">&quot;timestamp&quot;</span> ] <span class="op">&lt;&lt;</span> formattedTime</span>
-<span id="cb22-12"><a href="#cb22-12"></a>     , formattedCode ]</span>
-<span id="cb22-13"><a href="#cb22-13"></a>   <span class="kw">where</span> contents <span class="ot">=</span> <span class="fu">filter</span> (<span class="op">/=</span><span class="ch">&#39;\r&#39;</span>) <span class="op">$</span> pasteContents paste</span>
-<span id="cb22-14"><a href="#cb22-14"></a>         syntax <span class="ot">=</span> pasteSyntax paste</span>
-<span id="cb22-15"><a href="#cb22-15"></a>         formattedCode <span class="ot">=</span> <span class="kw">case</span> highlightAs syntax contents <span class="kw">of</span></span>
-<span id="cb22-16"><a href="#cb22-16"></a>                           <span class="dt">Left</span> _  <span class="ot">-&gt;</span> pre <span class="op">&lt;&lt;</span> thecode <span class="op">&lt;&lt;</span> contents</span>
-<span id="cb22-17"><a href="#cb22-17"></a>                           <span class="dt">Right</span> c <span class="ot">-&gt;</span> formatAsXHtml [<span class="dt">OptNumberLines</span>] syntax c</span>
-<span id="cb22-18"><a href="#cb22-18"></a>         timestamp <span class="ot">=</span> pasteTimestamp paste</span>
-<span id="cb22-19"><a href="#cb22-19"></a>         formattedTime <span class="ot">=</span> formatTime defaultTimeLocale <span class="st">&quot;%F %R UTC&quot;</span> timestamp</span>
-<span id="cb22-20"><a href="#cb22-20"></a>         uid <span class="ot">=</span> <span class="fu">show</span> (pasteId paste)</span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="ot">showPaste ::</span> <span class="dt">IConnection</span> d <span class="ot">=&gt;</span> d <span class="ot">-&gt;</span> <span class="dt">Integer</span> <span class="ot">-&gt;</span> <span class="dt">ServerPart</span> <span class="dt">Response</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>showPaste db uid <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  paste <span class="ot">&lt;-</span> getPasteFromDb db uid</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  ok <span class="op">$</span> toResponse <span class="op">$</span> (style <span class="op">!</span> [thetype <span class="st">&quot;text/css&quot;</span>] <span class="op">&lt;&lt;</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>      primHtml defaultHighlightingCss) <span class="op">+++</span> pasteToHtml paste</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="ot">pasteToHtml ::</span> <span class="dt">Paste</span> <span class="ot">-&gt;</span> <span class="dt">Html</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>pasteToHtml paste <span class="ot">=</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  thediv <span class="op">!</span> [identifier uid] <span class="op">&lt;&lt;</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>     [ h2 <span class="op">&lt;&lt;</span> pasteTitle paste</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>     , p <span class="op">!</span> [theclass <span class="st">&quot;timestamp&quot;</span> ] <span class="op">&lt;&lt;</span> formattedTime</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>     , formattedCode ]</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>   <span class="kw">where</span> contents <span class="ot">=</span> <span class="fu">filter</span> (<span class="op">/=</span><span class="ch">&#39;\r&#39;</span>) <span class="op">$</span> pasteContents paste</span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>         syntax <span class="ot">=</span> pasteSyntax paste</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>         formattedCode <span class="ot">=</span> <span class="kw">case</span> highlightAs syntax contents <span class="kw">of</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>                           <span class="dt">Left</span> _  <span class="ot">-&gt;</span> pre <span class="op">&lt;&lt;</span> thecode <span class="op">&lt;&lt;</span> contents</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>                           <span class="dt">Right</span> c <span class="ot">-&gt;</span> formatAsXHtml [<span class="dt">OptNumberLines</span>] syntax c</span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>         timestamp <span class="ot">=</span> pasteTimestamp paste</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>         formattedTime <span class="ot">=</span> formatTime defaultTimeLocale <span class="st">&quot;%F %R UTC&quot;</span> timestamp</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>         uid <span class="ot">=</span> <span class="fu">show</span> (pasteId paste)</span></code></pre></div>
 <h2 id="compiling-and-running-the-program">Compiling and running the program</h2>
 <p>Okay, that’s the whole program! Let’s compile and run it. First, make sure you have all the dependencies. You’ll need the <code>cabal</code> tool. This comes with the <a href="http://hackage.haskell.org/platform/">Haskell platform</a>, so if you don’t have it already, just install the Haskell platform. Then:</p>
 <pre><code>cabal update
