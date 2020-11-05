@@ -18,9 +18,9 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-        
+      - uses: actions/checkout@v2        
       - uses: docker://pandoc/core:2.9
         with:
           args: paste.lhs -f markdown+lhs -t html -s -o paste.html
+      - uses: actions/upload-artifact@main
 
