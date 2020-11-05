@@ -22,7 +22,7 @@ jobs:
       - uses: docker://pandoc/core:2.9
         with:
           args: paste.lhs -f markdown+lhs -t html -s -o paste.html
-      - uses: actions/upload-artifact@main
+      - uses: actions/upload-artifact@v2
         with:
           path: /
 
